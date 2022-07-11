@@ -1,0 +1,5 @@
+opencv-python==4.5.5.64
+pillow==9.2.0
+python-doctr==0.5.1
+torch==1.11.0
+torchvision==0.12.0
