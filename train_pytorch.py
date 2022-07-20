@@ -361,6 +361,9 @@ def main(args):
                 'mean_iou': mean_iou,
             })
 
+    print(f"Saving last state...")
+    torch.save(model.state_dict(), f"./{exp_name}_last.pt")
+
     if args.wb:
         run.finish()
 
