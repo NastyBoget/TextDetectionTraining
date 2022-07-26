@@ -2,13 +2,17 @@ import json
 import os
 
 import cv2
+import torch
 from doctr.models import detection_predictor
 from tqdm import tqdm
 
-data_dir = "actual_data/images"  # directory with images to label
-out_dir = "actual_data/labeled"  # directory for output json files with predicted labels
+data_dir = "/Users/anastasiabogatenkova/Downloads/passports/main_page_rotated"  # directory with images to label
+out_dir = "/Users/anastasiabogatenkova/Downloads/passports/labeled"  # directory for output json files with predicted labels
 
 text_detector = detection_predictor(arch='db_resnet50', pretrained=True)
+checkpoint = torch.load("../models/db_resnet50_20220719-081112_last.pt", map_location='cpu')
+text_detector.model.load_state_dict(checkpoint)
+text_detector.eval()
 
 # {
 #    "name": "1.jpg",
@@ -28,8 +32,11 @@ text_detector = detection_predictor(arch='db_resnet50', pretrained=True)
 for img_name in tqdm(os.listdir(data_dir)):
     if not img_name[0].isdigit():
         continue
-    img = cv2.imread(os.path.join(data_dir, img_name))
-    result = text_detector([img])
+    try:
+        img = cv2.imread(os.path.join(data_dir, img_name))
+        result = text_detector([img])
+    except AttributeError:
+        continue
     labeled_item = {
         "name": img_name,
         "entities": []

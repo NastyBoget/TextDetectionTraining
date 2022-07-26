@@ -4,4 +4,4 @@ venv*
 doctr*
 actual_data*
 models/*
-data*
+data/*

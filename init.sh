@@ -1,6 +1,8 @@
+rm -rf doctr
 git clone https://github.com/mindee/doctr
 
-cp train_pytorch.py doctr/references/detection/train_pytorch.py
-cp detection.py doctr/doctr/datasets/detection.py
+cp fixed_files/train_pytorch.py doctr/references/detection/train_pytorch.py
+cp fixed_files/detection.py doctr/doctr/datasets/detection.py
 
-python3 dataset_for_training.py
+rm -rf data
+python3 dataset/dataset_for_training.py https://at.ispras.ru/owncloud/index.php/s/UxCMVukvBCTWbz0/download
