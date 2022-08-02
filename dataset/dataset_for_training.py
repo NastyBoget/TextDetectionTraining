@@ -2,9 +2,31 @@ import json
 import random
 import os
 import zipfile
-from PIL import Image
+from copy import deepcopy
+
+import cv2
+import numpy as np
 
 import wget as wget
+
+from adaptive_docreader_binarizer import Binarizer
+
+
+def binarize(img: np.ndarray, img_name: str, out_dir: str, target_labels: dict, bboxes: list) -> None:
+    # block_size=40 delta=40
+    # block_size=45 delta=50
+    # block_size=15 delta=40
+    binarizer_list = [Binarizer(block_size=40, delta=40),
+                      Binarizer(block_size=45, delta=50),
+                      Binarizer(block_size=15, delta=40)]
+    for i, binarizer in enumerate(binarizer_list):
+        img_name_wo_ext, ext = os.path.splitext(img_name)
+
+        binarized_img_name = f"{img_name_wo_ext}_{i}{ext}"
+        img_copy = deepcopy(img)
+        img_copy = binarizer.binarize(img_copy)
+        target_labels[binarized_img_name] = {"polygons": bboxes}
+        cv2.imwrite(os.path.join(out_dir, binarized_img_name), img_copy)
 
 
 def main(args) -> None:
@@ -86,8 +108,8 @@ def main(args) -> None:
             json_file_name = f"{file_name}.json"
             if not os.path.isfile(os.path.join(target_dir, json_file_name)):
                 continue
-            with Image.open(os.path.join(target_dir, file_name)) as img:
-                w, h = img.size
+            img = cv2.imread(os.path.join(target_dir, file_name))
+            h, w, _ = img.shape
             with open(os.path.join(target_dir, json_file_name), "r") as f:
                 labels = json.load(f)
             bboxes = [[[int(w * item["x"]), int(h * item["y"])],
@@ -97,6 +119,8 @@ def main(args) -> None:
 
             os.rename(os.path.join(target_dir, file_name),
                       os.path.join(target_dir, stage, images_dir_name, file_name))
+            if args.augment:
+                binarize(img, file_name, os.path.join(target_dir, stage, images_dir_name), target_labels, bboxes)
 
         with open(os.path.join(target_dir, stage, "labels.json"), "w") as f:
             json.dump(target_labels, f)
@@ -108,6 +132,7 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('data_url', type=str, help='URL for the dataset downloading')
+    parser.add_argument('--augment', dest='augment', action='store_true', help='Augment data using binarization')
     args = parser.parse_args()
     return args
 
