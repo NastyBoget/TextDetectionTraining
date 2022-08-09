@@ -2,17 +2,14 @@ import json
 import os
 
 import cv2
-import torch
 from doctr.models import detection_predictor
 from tqdm import tqdm
 
 data_dir = "/Users/anastasiabogatenkova/Downloads/passports/main_page_rotated"  # directory with images to label
 out_dir = "/Users/anastasiabogatenkova/Downloads/passports/labeled"  # directory for output json files with predicted labels
+os.makedirs(out_dir, exist_ok=True)
 
 text_detector = detection_predictor(arch='db_resnet50', pretrained=True)
-checkpoint = torch.load("../models/db_resnet50_20220719-081112_last.pt", map_location='cpu')
-text_detector.model.load_state_dict(checkpoint)
-text_detector.eval()
 
 # {
 #    "name": "1.jpg",
